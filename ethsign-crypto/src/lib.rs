@@ -1,14 +1,14 @@
 //! Pure Rust drop-in replacement for the `parity-crypto` crate.
 
 pub mod aes;
-pub mod scrypt;
 pub mod error;
+pub mod scrypt;
 
-pub use error::Error;
+pub use self::error::Error;
 
-use sha2::Sha256;
 use hmac::Hmac;
 use pbkdf2::pbkdf2;
+use sha2::Sha256;
 use tiny_keccak::Keccak;
 
 pub const KEY_LENGTH: usize = 32;
@@ -36,7 +36,11 @@ impl<T: AsRef<[u8]>> Keccak256<[u8; 32]> for T {
     }
 }
 
-pub fn derive_key_iterations(password: &[u8], salt: &[u8], c: std::num::NonZeroU32) -> (Vec<u8>, Vec<u8>) {
+pub fn derive_key_iterations(
+    password: &[u8],
+    salt: &[u8],
+    c: std::num::NonZeroU32,
+) -> (Vec<u8>, Vec<u8>) {
     let mut derived_key = [0u8; KEY_LENGTH];
     pbkdf2::<Hmac<Sha256>>(password, salt, c.get() as usize, &mut derived_key);
     let derived_right_bits = &derived_key[0..KEY_LENGTH_AES];
@@ -77,7 +81,8 @@ mod test {
         let nonce = b"and secret nonce";
 
         let data = b"some bytes over here!";
-        let encrypted = b"\x74\x98\x10\x1d\x91\xf6\x5b\x89\xe4\xb9\x71\x96\x45\x4f\x02\xc3\xb4\x2f\xa3\xe4\x9b";
+        let encrypted =
+            b"\x74\x98\x10\x1d\x91\xf6\x5b\x89\xe4\xb9\x71\x96\x45\x4f\x02\xc3\xb4\x2f\xa3\xe4\x9b";
 
         let mut dest_rust = [0u8; 21];
         let mut dest_ring = [0u8; 21];
